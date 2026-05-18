@@ -1,0 +1,46 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "digital-vlad",
+  "owner": {
+    "name": "Digital Vlad",
+    "url": "https://vdigital.app/"
+  },
+  "metadata": {
+    "description": "Digital Vlad's plugin marketplace for Claude Code. Plugins focused on AI-era marketing, GEO (Generative Engine Optimization), and creator/SaaS workflows."
+  },
+  "plugins": [
+    {
+      "name": "claude-geo",
+      "source": "./",
+      "description": "Generative Engine Optimization (GEO) plugin. Five-pillar weighted scoring (Technical, Content, Schema, Off-site presence, Real-world citations) with real verifier scripts — not hypothetical estimates. Produces Markdown audit + HTML presentation deck + HTML technical guide. Coexists with claude-seo (different command namespace, no collision).",
+      "author": {
+        "name": "Digital Vlad",
+        "url": "https://vdigital.app/"
+      },
+      "category": "marketing",
+      "homepage": "https://vdigital.app/",
+      "keywords": [
+        "geo",
+        "generative-engine-optimization",
+        "ai-search",
+        "ai-overviews",
+        "chatgpt-citations",
+        "perplexity",
+        "claude",
+        "gemini",
+        "llm-optimization",
+        "llms-txt",
+        "schema-knowsabout",
+        "citable-framework",
+        "bluf",
+        "reddit-strategy",
+        "wikipedia-presence",
+        "g2-capterra",
+        "ai-crawlers",
+        "agentic-commerce",
+        "brand-mentions",
+        "llm-mention-tracking"
+      ]
+    }
+  ]
+}

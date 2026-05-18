@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GEO Technical Guide — {{BRAND}}</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --bg: #0a0a0f;
+    --bg-2: #13131d;
+    --bg-3: #1a1a26;
+    --accent: #ff6b35;
+    --accent-2: #ffd23f;
+    --accent-3: #06d6a0;
+    --accent-4: #118ab2;
+    --accent-5: #c77dff;
+    --danger: #ef476f;
+    --text: #f5f5f7;
+    --text-dim: #a0a0b0;
+    --text-muted: #6c6c7a;
+    --border: rgba(255,255,255,0.08);
+    --border-strong: rgba(255,255,255,0.15);
+    --code-bg: #05050a;
+  }
+  html { scroll-behavior: smooth; scroll-padding-top: 32px; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, 'SF Pro Display', 'Inter', system-ui, sans-serif; -webkit-font-smoothing: antialiased; line-height: 1.6; }
+  .layout { display: grid; grid-template-columns: 280px 1fr; min-height: 100vh; }
+  .sidebar { background: var(--bg-2); border-right: 1px solid var(--border); padding: 40px 24px; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
+  .sidebar-brand { font-size: 18px; font-weight: 800; margin-bottom: 4px; background: linear-gradient(135deg, var(--accent), var(--accent-2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .sidebar-sub { font-size: 11px; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 32px; }
+  .nav-section { margin-bottom: 24px; }
+  .nav-section-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; color: var(--text-muted); margin-bottom: 8px; padding: 0 12px; }
+  .nav-link { display: block; padding: 8px 12px; font-size: 13px; color: var(--text-dim); text-decoration: none; border-radius: 6px; border-left: 2px solid transparent; transition: all 0.15s; }
+  .nav-link:hover { color: var(--text); background: rgba(255,255,255,0.03); }
+  .nav-link.active { color: var(--accent); border-left-color: var(--accent); background: rgba(255,107,53,0.05); }
+  .content { padding: 64px 80px; max-width: 1080px; }
+  h1 { font-size: 48px; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 12px; }
+  h2 { font-size: 32px; font-weight: 700; letter-spacing: -0.02em; margin-top: 56px; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+  h3 { font-size: 22px; font-weight: 600; margin-top: 32px; margin-bottom: 12px; color: var(--text); }
+  p { font-size: 16px; color: var(--text-dim); margin-bottom: 16px; max-width: 800px; }
+  ul, ol { margin-left: 24px; margin-bottom: 16px; color: var(--text-dim); }
+  li { margin-bottom: 8px; line-height: 1.7; }
+  code { background: var(--code-bg); border: 1px solid var(--border); border-radius: 4px; padding: 2px 6px; font-family: 'SF Mono', 'Monaco', monospace; font-size: 13px; color: var(--accent-2); }
+  pre { background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px; padding: 20px; overflow-x: auto; margin: 16px 0; }
+  pre code { background: transparent; border: none; padding: 0; font-size: 13px; color: #a0ffa0; line-height: 1.5; }
+  table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px; }
+  th, td { padding: 12px 16px; text-align: left; border-bottom: 1px solid var(--border); }
+  th { color: var(--text); font-weight: 600; background: var(--bg-2); }
+  td { color: var(--text-dim); }
+  .score-header { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin: 24px 0 48px; align-items: stretch; }
+  .score-card { background: var(--bg-2); border: 1px solid var(--border); border-radius: 16px; padding: 32px; }
+  .score-card .label { font-size: 12px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 12px; }
+  .score-card .value { font-size: 64px; font-weight: 900; line-height: 1; letter-spacing: -0.03em; }
+  .grade-A { color: var(--accent-3); } .grade-B { color: var(--accent-2); } .grade-C { color: var(--accent-4); } .grade-D { color: var(--accent); } .grade-F { color: var(--danger); }
+  .score-card .meaning { font-size: 14px; color: var(--text-dim); margin-top: 12px; }
+  .chart-box { background: var(--bg-2); border: 1px solid var(--border); border-radius: 16px; padding: 28px; height: 360px; margin-bottom: 32px; position: relative; }
+  .crit-callout { background: rgba(239,71,111,0.08); border: 1px solid var(--danger); border-radius: 12px; padding: 20px 24px; margin: 16px 0; }
+  .crit-callout::before { content: '⚠ Critical'; display: block; font-size: 12px; font-weight: 700; letter-spacing: 1.5px; color: var(--danger); margin-bottom: 8px; }
+  .success-callout { background: rgba(6,214,160,0.08); border: 1px solid var(--accent-3); border-radius: 12px; padding: 20px 24px; margin: 16px 0; }
+  .success-callout::before { content: '✓ Good'; display: block; font-size: 12px; font-weight: 700; letter-spacing: 1.5px; color: var(--accent-3); margin-bottom: 8px; }
+  .action-card { background: var(--bg-2); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 16px; display: grid; grid-template-columns: 60px 1fr; gap: 24px; align-items: start; }
+  .action-card .rank { font-size: 36px; font-weight: 900; color: var(--accent); }
+  .action-card h3 { margin: 0 0 6px; }
+  .action-card .meta { font-size: 13px; color: var(--text-muted); }
+  .pillar-section { padding-top: 24px; }
+  .pillar-section .score-pill { display: inline-block; padding: 4px 14px; border-radius: 16px; font-size: 13px; font-weight: 600; background: var(--bg-3); color: var(--accent); margin-left: 12px; }
+  .author-footer { margin-top: 80px; padding: 40px; background: var(--bg-2); border: 1px solid var(--border); border-radius: 16px; text-align: center; }
+  .author-footer h3 { margin-top: 0; font-size: 20px; }
+  .author-footer .links { display: flex; flex-direction: column; gap: 12px; margin: 24px 0; align-items: center; }
+  .author-footer a { color: var(--accent-2); text-decoration: none; font-size: 16px; }
+  .author-footer a:hover { color: var(--accent); }
+  .author-footer small { color: var(--text-muted); font-size: 12px; letter-spacing: 1px; text-transform: uppercase; }
+  @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } .sidebar { position: relative; height: auto; } .content { padding: 32px 24px; } .score-header { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-brand">claude-geo</div>
+    <div class="sidebar-sub">Technical Guide</div>
+    <div class="nav-section">
+      <div class="nav-section-title">Summary</div>
+      <a href="#overview" class="nav-link active">Overview</a>
+      <a href="#pillars" class="nav-link">Pillar breakdown</a>
+      <a href="#critical" class="nav-link">Critical findings</a>
+      <a href="#actions" class="nav-link">Top 5 actions</a>
+    </div>
+    <div class="nav-section">
+      <div class="nav-section-title">Pillars</div>
+      <a href="#pillar-technical" class="nav-link">Technical accessibility</a>
+      <a href="#pillar-content" class="nav-link">Content citability</a>
+      <a href="#pillar-schema" class="nav-link">Schema &amp; entities</a>
+      <a href="#pillar-presence" class="nav-link">Off-site presence</a>
+      <a href="#pillar-mentions" class="nav-link">Real-world citations</a>
+    </div>
+    <div class="nav-section">
+      <div class="nav-section-title">References</div>
+      <a href="#methodology" class="nav-link">Methodology</a>
+      <a href="#about" class="nav-link">About the skill</a>
+    </div>
+  </aside>
+
+  <main class="content">
+    <section id="overview">
+      <h1>GEO Audit — <span style="background: linear-gradient(135deg, var(--accent), var(--accent-2)); -webkit-background-clip: text; background-clip: text; color: transparent;">{{BRAND}}</span></h1>
+      <p style="color: var(--text-muted); font-size: 14px;"><strong>URL:</strong> {{URL}} &nbsp;·&nbsp; <strong>Date:</strong> {{DATE}}</p>
+
+      <div class="score-header">
+        <div class="score-card">
+          <div class="label">Overall GEO score</div>
+          <div class="value" id="score-value">{{TOTAL_SCORE}}</div>
+          <div class="meaning">out of 100</div>
+        </div>
+        <div class="score-card">
+          <div class="label">Grade</div>
+          <div class="value" id="grade-value">{{GRADE}}</div>
+          <div class="meaning">{{GRADE_MEANING}}</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="pillars">
+      <h2>Pillar breakdown</h2>
+      <div class="chart-box"><canvas id="pillar-chart"></canvas></div>
+      <table id="pillar-table">
+        <thead><tr><th>Pillar</th><th>Score</th><th>Weight</th><th>Weighted contribution</th></tr></thead>
+        <tbody id="pillar-tbody"></tbody>
+      </table>
+    </section>
+
+    <section id="critical">
+      <h2>Critical findings</h2>
+      <div id="critical-container"></div>
+    </section>
+
+    <section id="actions">
+      <h2>Top 5 highest-leverage actions</h2>
+      <div id="actions-container"></div>
+    </section>
+
+    <section id="pillar-technical" class="pillar-section">
+      <h2>Pillar 1 — Technical accessibility <span class="score-pill" id="p1-pill">—</span></h2>
+      <p>robots.txt for AI bots, server-side rendering, llms.txt, sitemap, and Cloudflare AI Crawl Control.</p>
+      <div id="pillar-technical-findings"></div>
+    </section>
+
+    <section id="pillar-content" class="pillar-section">
+      <h2>Pillar 2 — Content citability <span class="score-pill" id="p2-pill">—</span></h2>
+      <p>CITABLE framework: BLUF, intent architecture, third-party validation, answer grounding, block structure, latest timestamps, entity schema.</p>
+      <div id="pillar-content-findings"></div>
+    </section>
+
+    <section id="pillar-schema" class="pillar-section">
+      <h2>Pillar 3 — Schema &amp; entities <span class="score-pill" id="p3-pill">—</span></h2>
+      <p>JSON-LD Organization with knowsAbout / sameAs, Product / Service link-back, FAQPage for AI extraction, entity chain depth.</p>
+      <div id="pillar-schema-findings"></div>
+    </section>
+
+    <section id="pillar-presence" class="pillar-section">
+      <h2>Pillar 4 — Off-site presence <span class="score-pill" id="p4-pill">—</span></h2>
+      <p>Wikipedia / Wikidata, G2 / Capterra / Trustpilot, Reddit organic, YouTube, LinkedIn, recent tier-1 PR.</p>
+      <div id="pillar-presence-findings"></div>
+    </section>
+
+    <section id="pillar-mentions" class="pillar-section">
+      <h2>Pillar 5 — Real-world citations <span class="score-pill" id="p5-pill">—</span></h2>
+      <p>Verified mentions in ChatGPT, Claude, Perplexity, and Google AI Overviews for category intent queries.</p>
+      <div id="pillar-mentions-findings"></div>
+    </section>
+
+    <section id="methodology">
+      <h2>Methodology</h2>
+      <p>This audit is the output of the open-source <code>claude-geo</code> skill. Every pillar score is computed by a real verifier script, not a hypothetical estimate.</p>
+      <table>
+        <thead><tr><th>Pillar</th><th>Verifier script(s)</th></tr></thead>
+        <tbody>
+          <tr><td>Technical accessibility</td><td><code>check_robots_txt.py</code>, <code>check_llms_txt.py</code>, <code>fetch_page.py --check-ssr</code></td></tr>
+          <tr><td>Content citability</td><td><code>check_content_structure.py</code></td></tr>
+          <tr><td>Schema &amp; entities</td><td><code>check_schema.py</code></td></tr>
+          <tr><td>Off-site presence</td><td><code>check_wikipedia.py</code>, <code>check_trust_sites.py</code>, <code>check_reddit_presence.py</code>, <code>check_youtube_presence.py</code></td></tr>
+          <tr><td>Real-world citations</td><td><code>check_llm_mentions.py</code></td></tr>
+        </tbody>
+      </table>
+      <p>Scoring rubric available in <code>skills/geo/references/scoring-rubric.md</code> in the plugin source.</p>
+      <p>The skill is designed to coexist with <code>claude-seo</code> — different command namespace (<code>/geo</code> vs <code>/seo</code>), no overlap. Use <code>/geo verify &lt;technique&gt; &lt;url&gt;</code> after implementing changes to confirm they landed.</p>
+    </section>
+
+    <section id="about" class="author-footer">
+      <h3>Built by Digital Vlad</h3>
+      <p>GEO audit produced by the open-source <code>claude-geo</code> skill for Claude Code.</p>
+      <div class="links">
+        <a href="https://vdigital.app/" target="_blank">🌐 vdigital.app</a>
+        <a href="https://t.me/vladi9ital" target="_blank">📨 t.me/vladi9ital</a>
+        <a href="https://www.youtube.com/@vladi9ital" target="_blank">▶️ youtube.com/@vladi9ital</a>
+      </div>
+      <small>updates and case studies on these channels</small>
+    </section>
+  </main>
+</div>
+
+<script id="audit-data" type="application/json">{{AUDIT_DATA_JSON}}</script>
+<script>
+(function() {
+  const data = JSON.parse(document.getElementById('audit-data').textContent || '{}');
+
+  // Grade colorization
+  const grade = (data.grade || 'C').toUpperCase();
+  document.getElementById('grade-value').classList.add('grade-' + grade);
+  document.getElementById('score-value').classList.add('grade-' + grade);
+
+  // Pillar chart
+  const pillars = data.pillars || {};
+  const labels = Object.keys(pillars).map(k => k.charAt(0).toUpperCase() + k.slice(1));
+  const scores = Object.values(pillars).map(p => p.score || 0);
+  const ctx = document.getElementById('pillar-chart');
+  if (ctx && window.Chart) {
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{
+          label: 'Pillar score',
+          data: scores,
+          backgroundColor: ['#ff6b35', '#ffd23f', '#06d6a0', '#118ab2', '#c77dff'],
+          borderRadius: 6,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true, max: 100, ticks: { color: '#a0a0b0' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+          x: { ticks: { color: '#a0a0b0', font: { size: 13 } }, grid: { display: false } },
+        }
+      }
+    });
+  }
+
+  // Pillar table
+  const tbody = document.getElementById('pillar-tbody');
+  const pillarOrder = ['technical','content','schema','presence','mentions'];
+  const pillIds = ['p1-pill','p2-pill','p3-pill','p4-pill','p5-pill'];
+  pillarOrder.forEach((name, i) => {
+    const p = pillars[name];
+    if (!p) return;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td><strong>${name.charAt(0).toUpperCase() + name.slice(1)}</strong></td>
+                    <td>${(p.score || 0).toFixed(1)}/100</td>
+                    <td>${Math.round((p.weight || 0) * 100)}%</td>
+                    <td>${(p.weighted_contribution || 0).toFixed(2)}</td>`;
+    tbody.appendChild(tr);
+    const pill = document.getElementById(pillIds[i]);
+    if (pill) pill.textContent = (p.score || 0).toFixed(0) + '/100';
+  });
+
+  // Critical findings
+  const critContainer = document.getElementById('critical-container');
+  const crits = data.critical_failures || [];
+  if (!crits.length) {
+    critContainer.innerHTML = '<div class="success-callout">No critical failures identified in this audit.</div>';
+  } else {
+    crits.forEach(c => {
+      const div = document.createElement('div');
+      div.className = 'crit-callout';
+      div.textContent = c;
+      critContainer.appendChild(div);
+    });
+  }
+
+  // Top 5 actions
+  const ac = document.getElementById('actions-container');
+  (data.top_5_actions || []).forEach((a, i) => {
+    const div = document.createElement('div');
+    div.className = 'action-card';
+    div.innerHTML = `
+      <div class="rank">${i + 1}</div>
+      <div>
+        <h3>${a.action || '?'}</h3>
+        <div class="meta">Pillar: <strong>${a.pillar || '?'}</strong> · Expected +${a.score_delta || '?'} points · Effort ${a.effort_hours || '?'}h · Leverage ${a.leverage || '?'}</div>
+      </div>
+    `;
+    ac.appendChild(div);
+  });
+
+  // Per-pillar findings
+  const findingsTargets = {
+    'technical': document.getElementById('pillar-technical-findings'),
+    'content': document.getElementById('pillar-content-findings'),
+    'schema': document.getElementById('pillar-schema-findings'),
+    'presence': document.getElementById('pillar-presence-findings'),
+    'mentions': document.getElementById('pillar-mentions-findings'),
+  };
+  Object.entries(pillars).forEach(([name, info]) => {
+    const target = findingsTargets[name];
+    if (!target) return;
+    const findings = info.findings || [];
+    if (!findings.length) {
+      target.innerHTML = '<p style="color: var(--text-muted); font-style: italic;">No detailed findings recorded for this pillar.</p>';
+      return;
+    }
+    const ul = document.createElement('ul');
+    findings.forEach(f => {
+      const li = document.createElement('li');
+      li.textContent = f;
+      ul.appendChild(li);
+    });
+    target.appendChild(ul);
+  });
+
+  // Scroll-spy sidebar
+  const navLinks = document.querySelectorAll('.nav-link');
+  const sections = Array.from(document.querySelectorAll('section[id]'));
+  function updateNav() {
+    const top = window.scrollY + 100;
+    let activeIdx = 0;
+    for (let i = 0; i < sections.length; i++) {
+      if (sections[i].offsetTop <= top) activeIdx = i;
+    }
+    navLinks.forEach(l => l.classList.remove('active'));
+    const activeId = sections[activeIdx].id;
+    const activeLink = document.querySelector(`.nav-link[href="#${activeId}"]`);
+    if (activeLink) activeLink.classList.add('active');
+  }
+  window.addEventListener('scroll', updateNav, { passive: true });
+  updateNav();
+})();
+</script>
+</body>
+</html>

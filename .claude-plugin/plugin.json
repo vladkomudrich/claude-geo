@@ -1,0 +1,34 @@
+{
+  "name": "claude-geo",
+  "version": "1.0.0",
+  "description": "Generative Engine Optimization (GEO) skill for Claude Code. Audits and improves how AI engines (ChatGPT, Claude, Perplexity, Google AI Overviews, Gemini, Copilot) cite and recommend your brand. 12 sub-skills, 7 sub-agents, 9 real-check verifiers plus scoring/reporting scripts. Reports in Markdown + two HTML formats (presentation deck + technical guide). Coexists with claude-seo via separate /geo namespace.",
+  "author": {
+    "name": "Digital Vlad",
+    "url": "https://vdigital.app/"
+  },
+  "license": "MIT",
+  "homepage": "https://vdigital.app/",
+  "category": "marketing",
+  "keywords": [
+    "geo",
+    "generative-engine-optimization",
+    "ai-search",
+    "ai-overviews",
+    "chatgpt-citations",
+    "perplexity",
+    "claude",
+    "gemini",
+    "llm-optimization",
+    "llms-txt",
+    "schema-knowsabout",
+    "citable-framework",
+    "bluf",
+    "reddit-strategy",
+    "wikipedia-presence",
+    "g2-capterra",
+    "ai-crawlers",
+    "agentic-commerce",
+    "brand-mentions",
+    "llm-mention-tracking"
+  ]
+}
