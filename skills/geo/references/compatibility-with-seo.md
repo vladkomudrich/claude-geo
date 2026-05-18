@@ -12,7 +12,7 @@ This skill is designed to be installed alongside `claude-seo` (AgriciDaniel) and
 | Skill folder | `skills/seo/`, `skills/seo-*/` | `skills/geo/`, `skills/geo-*/` |
 | Agent prefix | `seo-*` in `agents/` | `geo-*` in `agents/` |
 | Script prefix | varies | `check_*.py`, `score_geo.py`, `generate_report.py` |
-| Output file convention | `SEO-*.md`, GSC PDFs | `GEO-Audit-*.md`, `GEO-Presentation-*.html`, `GEO-Guide-*.html` |
+| Output file convention | `SEO-*.md`, GSC PDFs | `GEO-Audit-*.md`, `GEO-Guide-*.html` |
 
 There is no skill name collision, no agent name collision, no script name
 collision. Both plugins coexist.
@@ -28,7 +28,7 @@ be useful in the same workflow.
 | Full SEO audit with one-shot GEO pass | `/seo audit <url>` (claude-seo) |
 | Quick GEO read on a single page during SEO work | `/seo geo <url>` (claude-seo) |
 | Deep GEO audit with real LLM-mention verification | `/geo audit <url>` (claude-geo) |
-| GEO scoring rubric + dual-HTML report | `/geo audit <url>` then `/geo report all <url>` |
+| GEO scoring rubric + MD + HTML guide | `/geo audit <url>` then `/geo report all <url>` |
 | Off-site presence audit (Reddit / Wikipedia / G2 / Capterra) | `/geo presence <brand>` |
 | Verify a single technique was applied | `/geo verify <technique> <url>` |
 | Strategic 90-day GEO roadmap (technical + creative) | `/geo plan <brand>` |

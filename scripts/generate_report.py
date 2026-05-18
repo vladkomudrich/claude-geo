@@ -5,7 +5,7 @@ generate_report.py — Render GEO audit reports from a structured data file.
 Usage:
     python generate_report.py
         --input audit-data.json
-        --format md|html-deck|html-guide|all
+        --format md|html-guide|all
         --output-dir <dir>
         --brand "Acme"
         --url "https://acme.com"
@@ -14,8 +14,10 @@ Expects scored audit data (output of score_geo.py).
 
 Templates loaded from <plugin>/templates/:
   - report-audit.md
-  - report-presentation.html
   - report-guide.html
+
+Note: the HTML presentation deck was retired in v1.1.0 — the technical
+guide is the single HTML deliverable.
 
 Each artifact carries Digital Vlad's author footer (vdigital.app, t.me/vladi9ital,
 youtube.com/@vladi9ital).
@@ -67,7 +69,6 @@ def slugify(s: str) -> str:
 def load_templates(plugin_dir: Path) -> dict:
     return {
         "md": (plugin_dir / "templates" / "report-audit.md").read_text(),
-        "html-deck": (plugin_dir / "templates" / "report-presentation.html").read_text(),
         "html-guide": (plugin_dir / "templates" / "report-guide.html").read_text(),
     }
 
@@ -151,7 +152,7 @@ def render_html(template: str, data: dict) -> str:
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--input", required=True)
-    parser.add_argument("--format", default="all", choices=["md", "html-deck", "html-guide", "all"])
+    parser.add_argument("--format", default="all", choices=["md", "html-guide", "all"])
     parser.add_argument("--output-dir", default=".")
     parser.add_argument("--brand", default="")
     parser.add_argument("--url", default="")
@@ -182,11 +183,6 @@ def main():
         md = render_md(templates["md"], data, author_footer)
         path = out_dir / f"GEO-Audit-{slug}-{date}.md"
         path.write_text(md)
-        generated.append(str(path))
-    if args.format in {"html-deck", "all"}:
-        html = render_html(templates["html-deck"], data)
-        path = out_dir / f"GEO-Presentation-{slug}-{date}.html"
-        path.write_text(html)
         generated.append(str(path))
     if args.format in {"html-guide", "all"}:
         html = render_html(templates["html-guide"], data)

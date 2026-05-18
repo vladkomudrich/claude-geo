@@ -70,15 +70,14 @@ detection and ask the user to confirm or edit.
 
 Call `geo-report` sub-skill with `type=all` to produce:
 - `GEO-Audit-{brand}-{YYYY-MM-DD}.md`
-- `GEO-Presentation-{brand}-{YYYY-MM-DD}.html`
 - `GEO-Guide-{brand}-{YYYY-MM-DD}.html`
 
-All three saved to the user's working directory.
+Both saved to the user's working directory.
 
 ### Phase 6 — Author footer
 
 Append the contents of `../geo/references/author.md` to the chat output and
-embed it in the HTML reports.
+embed it in the HTML guide.
 
 ## Asking for missing context
 

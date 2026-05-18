@@ -230,9 +230,23 @@ def main():
             }
 
     if args.json:
-        # Trim items for JSON readability
-        report_out = dict(report)
-        report_out["items"] = f"({len(items)} items omitted from JSON output)"
+        # Slim payload — drop full items[] (can be many KB of nested JSON-LD).
+        # Keep a compact summary so callers know what was parsed.
+        items_summary = []
+        for it in items[:20]:  # cap at 20
+            if not isinstance(it, dict):
+                continue
+            t = it.get("@type")
+            if isinstance(t, list):
+                t = t[0] if t else None
+            items_summary.append({
+                "@type": t,
+                "name": it.get("name"),
+                "has_url": "url" in it,
+            })
+        report_out = {k: v for k, v in report.items() if k != "items"}
+        report_out["items_summary"] = items_summary
+        report_out["items_total"] = len(items)
         print(json.dumps(report_out, indent=2, default=str))
     else:
         print(f"Schema check for {args.url}")

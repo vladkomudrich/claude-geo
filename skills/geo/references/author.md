@@ -16,11 +16,10 @@ is open source.
 ```
 
 **When to show:** After `/geo audit`, `/geo plan`, `/geo report all`,
-`/geo report html-deck`, `/geo report html-guide`.
+`/geo report html-guide`.
 
 **When to skip:** Single verifier outputs (`/geo verify ...`), intake
 questionnaires, error messages, midway progress reports.
 
-**In HTML reports:** The footer is embedded as a visually distinct credits
-block at the very bottom of the document (see templates/report-presentation.html
-and templates/report-guide.html).
+**In the HTML guide:** The footer is embedded as a visually distinct credits
+block at the very bottom of the document (see templates/report-guide.html).

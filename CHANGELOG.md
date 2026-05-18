@@ -9,6 +9,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 _Nothing yet — open an issue or PR if you find one._
 
+## [1.1.0] — 2026-05-18
+
+Token optimization release. Measured ~191K tokens/audit on v1.0.0; v1.1.0
+targets ~100-130K (-35% to -45%).
+
+### Removed
+
+- **HTML presentation deck retired.** The `report-presentation.html` template and the `html-deck` format option were dropped from the pipeline. The technical HTML guide (`report-guide.html`) is now the single HTML deliverable — it already includes overview / score header / pillar chart sections suitable for sharing with leadership. The old template file is left on disk as a no-op stub for users to delete manually.
+
+### Added
+
+- `scripts/aggregate_technical.py` — single-call wrapper that runs robots.txt + llms.txt + SSR + Cloudflare checks and returns one consolidated JSON with `pillar_1_score` precomputed. Replaces 3-4 separate tool calls in `geo-technical`.
+
+### Changed
+
+- **Sub-agent models**: switched `geo-presence` and `geo-reddit` from Sonnet to **Haiku** (pure tabulation). Kept Sonnet for `geo-technical`, `geo-content`, `geo-schema`, `geo-reporter`, and `geo-mentions` (the last is the ground-truth Pillar-5 signal — quality > cost).
+- **Sub-agent `effort` levels** on Sonnet agents tuned per task complexity: `low` for `geo-technical` + `geo-reporter` (script-driven dispatch), `medium` for `geo-schema` + `geo-mentions` (validation / classification), `high` for `geo-content` (CITABLE conceptual checks need deep reasoning).
+- **Sub-agent SKILL.md prose trimmed** — duplicate scoring details removed, each agent now relies on the canonical `scoring-rubric.md` reference. Smaller activation cost.
+- **`geo-reporter` locked down** — `templates/report-*.html` are no longer allowed in the agent's context. All rendering happens in `generate_report.py`. Saves ~35KB / audit.
+- **`geo-presence`** continues to run all 4 checks (Wikipedia, Trust sites, Reddit, YouTube) — conservative for accuracy. Switched to Haiku for the tabulation layer instead.
+- **`check_schema.py --json`** emits a slim `items_summary` instead of the full parsed JSON-LD array. Multi-KB savings on schema-rich sites.
+
+### Performance
+
+- Per-audit token reduction: ~35-45% (projected 100-130K vs 191K baseline). More conservative than the aggressive variant — keeps Sonnet on `geo-mentions` and full presence checks for quality.
+- Tool call count reduction: most pronounced in `geo-technical` (30 → ~5 via `aggregate_technical.py`).
+
 ## [1.0.0] — 2026-05-18
 
 Initial public release. A modular Generative Engine Optimization plugin
@@ -90,5 +117,6 @@ for Claude Code, designed to coexist with [claude-seo](https://github.com/Agrici
 - API keys for direct LLM mention checks (`OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `PERPLEXITY_API_KEY`) are optional; the plugin falls back to WebSearch with explicit `INDIRECT` marking.
 - Scrapers (Reddit, YouTube, DuckDuckGo) surface `_error` / `_warning` markers when public HTML/JSON structures change, so callers can distinguish "scraper broken" from "genuine zero result".
 
-[Unreleased]: https://github.com/vladkomudrich/claude-geo/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/vladkomudrich/claude-geo/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/vladkomudrich/claude-geo/releases/tag/v1.1.0
 [1.0.0]: https://github.com/vladkomudrich/claude-geo/releases/tag/v1.0.0

@@ -52,7 +52,7 @@ and used in the same workflow.
 | `/geo trust <brand>` | Wikipedia / Wikidata / G2 / Capterra / Trustpilot presence + score check |
 | `/geo plan <url\|brand>` | Strategic GEO roadmap: 90-day plan combining technical + creative techniques |
 | `/geo verify <technique> <url>` | Verify a specific technique was applied (e.g. `verify schema-knowsabout`, `verify llms-txt`) |
-| `/geo report <type> <url>` | Generate a report. Types: `md`, `html-deck` (presentation), `html-guide` (technical), `all` |
+| `/geo report <type> <url>` | Generate a report. Types: `md`, `html-guide` (technical), `all` |
 
 ## `/geo help` — What This Plugin Does
 
