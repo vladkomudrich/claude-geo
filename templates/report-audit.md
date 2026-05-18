@@ -4,7 +4,15 @@
 **Date:** {{DATE}}
 **Score:** {{TOTAL_SCORE}}/100 — Grade {{GRADE}}
 
+> **Thesis.** {{NARRATIVE_THESIS}}
+
 > {{GRADE_MEANING}}
+
+---
+
+## What's working
+
+{{WHATS_WORKING}}
 
 ---
 
@@ -16,15 +24,24 @@
 
 ---
 
+## Per-engine visibility projection
+
+Each AI engine weighs the five pillars differently. These are projected
+visibility scores given the current pillar mix:
+
+{{PLATFORM_PROJECTIONS}}
+
+---
+
 ## Critical Failures
 
 {{CRITICAL_FAILURES}}
 
 ---
 
-## Top 5 Highest-Impact Actions
+## Action Plan — by effort tier
 
-{{TOP_5_ACTIONS}}
+{{TIERED_ACTIONS}}
 
 ---
 

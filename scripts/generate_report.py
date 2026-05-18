@@ -83,6 +83,18 @@ def render_data_json(data: dict) -> str:
     return raw.replace("</", "<\\/")
 
 
+def _render_action(a: dict, idx: int) -> str:
+    """Render a single action as a markdown block with optional rewrite example."""
+    line = (f"{idx}. **{a.get('action','')}** — pillar: `{a.get('pillar','')}`, "
+            f"+{a.get('score_delta','?')} pts, "
+            f"effort: {a.get('effort_hours','?')}h, "
+            f"leverage: {a.get('leverage','?')}\n")
+    rewrite = a.get("rewrite_example")
+    if rewrite:
+        line += f"\n   **Ready-to-paste:**\n   > {rewrite.strip().replace(chr(10), chr(10) + '   > ')}\n"
+    return line
+
+
 def render_md(template: str, data: dict, author_footer: str = None) -> str:
     """Simple {{key}} substitution for markdown template."""
     out = template
@@ -92,6 +104,36 @@ def render_md(template: str, data: dict, author_footer: str = None) -> str:
     out = out.replace("{{TOTAL_SCORE}}", str(data.get("total_score", 0)))
     out = out.replace("{{GRADE}}", str(data.get("grade", "?")))
     out = out.replace("{{GRADE_MEANING}}", str(data.get("grade_meaning", "")))
+
+    # Narrative thesis (v1.2.0)
+    thesis = data.get("narrative_thesis") or ""
+    out = out.replace("{{NARRATIVE_THESIS}}", thesis if thesis else "_No narrative thesis recorded._")
+
+    # What's working (v1.2.0)
+    working = data.get("whats_working") or []
+    if working:
+        working_md = "\n".join(f"- {w}" for w in working)
+    else:
+        working_md = "_No strengths recorded._"
+    out = out.replace("{{WHATS_WORKING}}", working_md)
+
+    # Platform projections (v1.2.0)
+    plats = data.get("platform_projections") or {}
+    if plats:
+        platforms_md = "| Engine | Projected visibility | Notes |\n|--------|---------------------|-------|\n"
+        engine_names = {
+            "google_aio": "Google AI Overviews",
+            "chatgpt": "ChatGPT",
+            "perplexity": "Perplexity",
+            "claude": "Claude",
+            "copilot": "Copilot",
+        }
+        for key, label in engine_names.items():
+            info = plats.get(key, {})
+            platforms_md += f"| {label} | {info.get('projected_score','—')}/100 | {info.get('note','')} |\n"
+        out = out.replace("{{PLATFORM_PROJECTIONS}}", platforms_md.rstrip())
+    else:
+        out = out.replace("{{PLATFORM_PROJECTIONS}}", "_Platform projections not computed._")
 
     # Pillars table
     pillars_md = ""
@@ -108,13 +150,31 @@ def render_md(template: str, data: dict, author_footer: str = None) -> str:
         crit_md = "_None identified in this audit._"
     out = out.replace("{{CRITICAL_FAILURES}}", crit_md)
 
-    # Top 5 actions
+    # Tiered actions (v1.2.0) — quick wins / medium effort / high impact
+    tiered = data.get("tiered_actions") or {}
+    tiered_md = ""
+    tier_labels = [
+        ("quick_wins", "Quick wins (≤ 2h each)"),
+        ("medium_effort", "Medium effort (2–16h each)"),
+        ("high_impact", "High impact (> 16h each)"),
+    ]
+    for tier_key, label in tier_labels:
+        items = tiered.get(tier_key) or []
+        tiered_md += f"\n### {label}\n\n"
+        if items:
+            for i, a in enumerate(items, start=1):
+                tiered_md += _render_action(a, i)
+        else:
+            tiered_md += "_No actions in this tier._\n"
+    if tiered_md.strip():
+        out = out.replace("{{TIERED_ACTIONS}}", tiered_md)
+    else:
+        out = out.replace("{{TIERED_ACTIONS}}", "_No actions specified._")
+
+    # Backward compat: keep TOP_5_ACTIONS replacement if old template used
     actions_md = ""
     for i, a in enumerate(data.get("top_5_actions") or [], start=1):
-        actions_md += (f"{i}. **{a.get('action','')}** — pillar: `{a.get('pillar','')}`, "
-                       f"expected score delta +{a.get('score_delta','?')}, "
-                       f"effort: {a.get('effort_hours','?')}h, "
-                       f"leverage: {a.get('leverage','?')}\n")
+        actions_md += _render_action(a, i)
     if not actions_md:
         actions_md = "_No actions specified._"
     out = out.replace("{{TOP_5_ACTIONS}}", actions_md)

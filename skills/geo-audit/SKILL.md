@@ -90,7 +90,61 @@ question per concept, not all at once):
 4. Whether the user already has Wikipedia / G2 / Capterra listings (avoids
    redundant external searches).
 
-## Output structure
+## Required output data shape (v1.2.0+)
+
+The audit must produce a JSON payload with these fields. The reporter
+consumes it directly:
+
+```json
+{
+  "brand": "...",
+  "url": "...",
+  "narrative_thesis": "One sentence summarizing the situation (e.g. 'Technically excellent, content-thin').",
+  "whats_working": [
+    "robots.txt explicitly allows all major AI bots",
+    "llms.txt is present and exceeds the standard",
+    "Schema is solid — Organization, Product, FAQ all valid"
+  ],
+  "pillars": {
+    "technical": {"score": 82, "findings": ["...", "..."]},
+    "content":   {"score": 55, "findings": ["...", "..."]},
+    "schema":    {"score": 55, "findings": ["...", "..."]},
+    "presence":  {"score": 0,  "findings": ["...", "..."]},
+    "mentions":  {"score": 0,  "findings": ["...", "..."]}
+  },
+  "critical_failures": ["...", "..."],
+  "actions": [
+    {
+      "action": "Add knowsAbout + sameAs to Organization JSON-LD in src/app/layout.tsx",
+      "pillar": "Schema",
+      "score_delta": 30,
+      "effort_hours": 0.5,
+      "rewrite_example": "\"knowsAbout\": [\"eSIM\", \"travel connectivity\", \"mobile data plans\"]"
+    }
+  ]
+}
+```
+
+Three required v1.2.0 fields:
+
+- **`narrative_thesis`** (1 sentence). Punchy thesis statement — what's the
+  one-line read of this brand's GEO posture? Read by a human in 2 seconds.
+- **`whats_working`** (3-5 bullets). What's already done well. Lead with
+  these BEFORE Critical Failures — frames the audit as a partnership, not
+  a takedown.
+- **`actions[].rewrite_example`** (optional). When an action involves
+  rewriting copy or pasting code, include the exact text the user can copy.
+  Don't just say "rewrite this" — show what.
+
+The reporter auto-tiers actions by `effort_hours`:
+- ≤ 2h → quick wins
+- 2-16h → medium effort
+- > 16h → high impact
+
+Per-engine projections (Google AIO / ChatGPT / Perplexity / Claude / Copilot)
+are computed automatically by `score_geo.py` based on the pillar mix.
+
+## Output structure (markdown rendered)
 
 ```
 # GEO Audit — {Brand}

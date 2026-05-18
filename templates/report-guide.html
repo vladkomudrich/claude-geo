@@ -83,9 +83,11 @@
     <div class="nav-section">
       <div class="nav-section-title">Summary</div>
       <a href="#overview" class="nav-link active">Overview</a>
+      <a href="#whats-working" class="nav-link">What's working</a>
       <a href="#pillars" class="nav-link">Pillar breakdown</a>
+      <a href="#platforms" class="nav-link">Per-engine projection</a>
       <a href="#critical" class="nav-link">Critical findings</a>
-      <a href="#actions" class="nav-link">Top 5 actions</a>
+      <a href="#actions" class="nav-link">Action plan</a>
     </div>
     <div class="nav-section">
       <div class="nav-section-title">Pillars</div>
@@ -107,6 +109,8 @@
       <h1>GEO Audit — <span style="background: linear-gradient(135deg, var(--accent), var(--accent-2)); -webkit-background-clip: text; background-clip: text; color: transparent;">{{BRAND}}</span></h1>
       <p style="color: var(--text-muted); font-size: 14px;"><strong>URL:</strong> {{URL}} &nbsp;·&nbsp; <strong>Date:</strong> {{DATE}}</p>
 
+      <p id="thesis-paragraph" style="font-size: 20px; color: var(--text); margin: 24px 0 0; padding: 20px 24px; background: var(--bg-2); border-left: 3px solid var(--accent-2); border-radius: 6px; max-width: none;"></p>
+
       <div class="score-header">
         <div class="score-card">
           <div class="label">Overall GEO score</div>
@@ -121,6 +125,11 @@
       </div>
     </section>
 
+    <section id="whats-working">
+      <h2>What's working</h2>
+      <div id="working-container"></div>
+    </section>
+
     <section id="pillars">
       <h2>Pillar breakdown</h2>
       <div class="chart-box"><canvas id="pillar-chart"></canvas></div>
@@ -130,14 +139,28 @@
       </table>
     </section>
 
+    <section id="platforms">
+      <h2>Per-engine visibility projection</h2>
+      <p>Each AI engine weighs the five pillars differently. These are projected visibility scores given the current pillar mix.</p>
+      <table id="platforms-table">
+        <thead><tr><th>Engine</th><th>Projected</th><th>Weighting notes</th></tr></thead>
+        <tbody id="platforms-tbody"></tbody>
+      </table>
+    </section>
+
     <section id="critical">
       <h2>Critical findings</h2>
       <div id="critical-container"></div>
     </section>
 
     <section id="actions">
-      <h2>Top 5 highest-leverage actions</h2>
-      <div id="actions-container"></div>
+      <h2>Action plan — by effort tier</h2>
+      <h3 style="color: var(--accent-3);">Quick wins (≤ 2h each)</h3>
+      <div id="quick-wins-container"></div>
+      <h3 style="color: var(--accent-2);">Medium effort (2–16h each)</h3>
+      <div id="medium-effort-container"></div>
+      <h3 style="color: var(--accent);">High impact (&gt; 16h each)</h3>
+      <div id="high-impact-container"></div>
     </section>
 
     <section id="pillar-technical" class="pillar-section">
@@ -210,6 +233,53 @@
   document.getElementById('grade-value').classList.add('grade-' + grade);
   document.getElementById('score-value').classList.add('grade-' + grade);
 
+  // Narrative thesis (v1.2.0)
+  const thesisEl = document.getElementById('thesis-paragraph');
+  if (thesisEl) {
+    const thesis = data.narrative_thesis || '';
+    if (thesis) {
+      thesisEl.innerHTML = '<strong>Thesis.</strong> ' + thesis;
+    } else {
+      thesisEl.style.display = 'none';
+    }
+  }
+
+  // What's working (v1.2.0)
+  const workingContainer = document.getElementById('working-container');
+  const working = data.whats_working || [];
+  if (!working.length) {
+    workingContainer.innerHTML = '<p style="color: var(--text-muted); font-style: italic;">No strengths recorded.</p>';
+  } else {
+    const ul = document.createElement('ul');
+    working.forEach(w => {
+      const li = document.createElement('li');
+      li.textContent = w;
+      li.style.color = 'var(--accent-3)';
+      ul.appendChild(li);
+    });
+    workingContainer.appendChild(ul);
+  }
+
+  // Platform projections (v1.2.0)
+  const platformsTbody = document.getElementById('platforms-tbody');
+  const platforms = data.platform_projections || {};
+  const engineNames = {
+    'google_aio': 'Google AI Overviews',
+    'chatgpt': 'ChatGPT',
+    'perplexity': 'Perplexity',
+    'claude': 'Claude',
+    'copilot': 'Copilot',
+  };
+  Object.entries(engineNames).forEach(([key, label]) => {
+    const info = platforms[key];
+    if (!info) return;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td><strong>${label}</strong></td>
+                    <td>${info.projected_score || '—'}/100</td>
+                    <td style="color: var(--text-muted);">${info.note || ''}</td>`;
+    platformsTbody.appendChild(tr);
+  });
+
   // Pillar chart
   const pillars = data.pillars || {};
   const labels = Object.keys(pillars).map(k => k.charAt(0).toUpperCase() + k.slice(1));
@@ -270,19 +340,36 @@
     });
   }
 
-  // Top 5 actions
-  const ac = document.getElementById('actions-container');
-  (data.top_5_actions || []).forEach((a, i) => {
+  // Tiered actions (v1.2.0)
+  function renderAction(a, idx) {
     const div = document.createElement('div');
     div.className = 'action-card';
-    div.innerHTML = `
-      <div class="rank">${i + 1}</div>
+    let inner = `
+      <div class="rank">${idx + 1}</div>
       <div>
         <h3>${a.action || '?'}</h3>
-        <div class="meta">Pillar: <strong>${a.pillar || '?'}</strong> · Expected +${a.score_delta || '?'} points · Effort ${a.effort_hours || '?'}h · Leverage ${a.leverage || '?'}</div>
-      </div>
-    `;
-    ac.appendChild(div);
+        <div class="meta">Pillar: <strong>${a.pillar || '?'}</strong> · Expected +${a.score_delta || '?'} points · Effort ${a.effort_hours || '?'}h · Leverage ${a.leverage || '?'}</div>`;
+    if (a.rewrite_example) {
+      inner += `<pre style="margin-top: 12px; white-space: pre-wrap;"><code>${a.rewrite_example.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</code></pre>`;
+    }
+    inner += '</div>';
+    div.innerHTML = inner;
+    return div;
+  }
+  const tiered = data.tiered_actions || {};
+  const tiers = [
+    { key: 'quick_wins', container: 'quick-wins-container' },
+    { key: 'medium_effort', container: 'medium-effort-container' },
+    { key: 'high_impact', container: 'high-impact-container' },
+  ];
+  tiers.forEach(t => {
+    const container = document.getElementById(t.container);
+    const items = tiered[t.key] || [];
+    if (!items.length) {
+      container.innerHTML = '<p style="color: var(--text-muted); font-style: italic;">No actions in this tier.</p>';
+      return;
+    }
+    items.forEach((a, i) => container.appendChild(renderAction(a, i)));
   });
 
   // Per-pillar findings

@@ -59,6 +59,47 @@ def grade_meaning(g: str) -> str:
     }[g]
 
 
+def tier_action(effort_hours: float) -> str:
+    """Tier actions by effort. Quick win ≤ 2h, medium 2-16h, high impact > 16h."""
+    if effort_hours <= 2:
+        return "quick_wins"
+    if effort_hours <= 16:
+        return "medium_effort"
+    return "high_impact"
+
+
+def project_platforms(pillars: dict) -> dict:
+    """Estimate per-platform impact given the five pillar scores.
+
+    Each AI engine weighs the pillars differently. Multipliers tuned from the
+    `platforms-2026.md` reference. Result is a 0-100 projected visibility score
+    per engine — useful for prioritizing actions.
+    """
+    weights = {
+        # Each engine gets a different mix:
+        "google_aio":  {"technical": 0.25, "content": 0.20, "schema": 0.30, "presence": 0.15, "mentions": 0.10},
+        "chatgpt":     {"technical": 0.15, "content": 0.20, "schema": 0.15, "presence": 0.30, "mentions": 0.20},
+        "perplexity":  {"technical": 0.15, "content": 0.20, "schema": 0.10, "presence": 0.35, "mentions": 0.20},
+        "claude":      {"technical": 0.20, "content": 0.30, "schema": 0.15, "presence": 0.15, "mentions": 0.20},
+        "copilot":     {"technical": 0.25, "content": 0.20, "schema": 0.30, "presence": 0.15, "mentions": 0.10},
+    }
+    notes = {
+        "google_aio": "Weights: schema-heavy + technical + content.",
+        "chatgpt": "Weights: own product page + G2 ≥4.0 + Wikipedia presence.",
+        "perplexity": "Weights: Reddit + YouTube + freshness.",
+        "claude": "Weights: first-party docs + primary-source citations.",
+        "copilot": "Weights: Bing index + structured data + LinkedIn.",
+    }
+    out = {}
+    for engine, w in weights.items():
+        score = sum(pillars.get(p, {}).get("score", 0) * mult for p, mult in w.items())
+        out[engine] = {
+            "projected_score": round(score, 1),
+            "note": notes[engine],
+        }
+    return out
+
+
 def compute(payload: dict) -> dict:
     pillars = payload.get("pillars", {})
     weighted_total = 0.0
@@ -78,22 +119,32 @@ def compute(payload: dict) -> dict:
     total = round(weighted_total, 1)
     g = grade(total)
 
-    # Rank actions by leverage = score_delta / effort_hours
+    # Rank actions by leverage = score_delta / effort_hours, then tier them.
     actions = payload.get("actions", [])
     for a in actions:
         e = max(0.5, float(a.get("effort_hours", 1)))
         a["leverage"] = round(float(a.get("score_delta", 0)) / e, 2)
-    top_actions = sorted(actions, key=lambda a: -a["leverage"])[:5]
+        a["tier"] = tier_action(float(a.get("effort_hours", 1)))
+    actions_sorted = sorted(actions, key=lambda a: -a["leverage"])
+
+    tiered = {"quick_wins": [], "medium_effort": [], "high_impact": []}
+    for a in actions_sorted:
+        tier = a.get("tier", "medium_effort")
+        tiered[tier].append(a)
 
     return {
         "brand": payload.get("brand"),
         "url": payload.get("url"),
+        "narrative_thesis": payload.get("narrative_thesis", ""),
+        "whats_working": payload.get("whats_working", []),
         "total_score": total,
         "grade": g,
         "grade_meaning": grade_meaning(g),
         "pillars": pillar_details,
+        "platform_projections": project_platforms(pillar_details),
         "critical_failures": payload.get("critical_failures", []),
-        "top_5_actions": top_actions,
+        "top_5_actions": actions_sorted[:5],  # kept for backward compat
+        "tiered_actions": tiered,
     }
 
 

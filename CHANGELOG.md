@@ -9,6 +9,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 _Nothing yet — open an issue or PR if you find one._
 
+## [1.2.0] — 2026-05-18
+
+Report quality release. Adds five report-presentation improvements while
+keeping the verified-ground-truth scoring intact.
+
+### Added
+
+- **`narrative_thesis`** — single-sentence summary at the top of every report ("Technically excellent, content-thin"). Punchy, 2-second read.
+- **`whats_working` section** — 3-5 strengths surfaced BEFORE Critical Failures. Audits now read as partnership, not takedown.
+- **Per-engine visibility projection** — auto-computed table mapping pillar mix to projected scores for Google AIO / ChatGPT / Perplexity / Claude / Copilot. Each engine weighs pillars differently; computation lives in `score_geo.py::project_platforms()`.
+- **`actions[].rewrite_example`** field — actions can carry the exact text/code snippet to paste. Markdown reports show "Ready-to-paste" blockquote; HTML guide shows monospaced `<pre>` block.
+- **Tiered action plan** — replaces flat top-5 list with three buckets: Quick wins (≤ 2h), Medium effort (2-16h), High impact (> 16h). Auto-tiered by `effort_hours` in `score_geo.py::tier_action()`.
+
+### Changed
+
+- `templates/report-audit.md` and `templates/report-guide.html` regenerated with new sections. Sidebar nav in the HTML guide gets "What's working" and "Per-engine projection" entries.
+- `skills/geo-audit/SKILL.md` documents the new v1.2.0 data shape so the audit orchestrator emits the required fields.
+
+### Backward compatibility
+
+- `top_5_actions` field still present in scored output for any v1.1.x consumers — but reports prefer `tiered_actions`.
+- Old audit JSONs (v1.0/v1.1 without thesis / whats_working / rewrite_example) render gracefully with placeholder text where the new fields would appear.
+
 ## [1.1.0] — 2026-05-18
 
 Token optimization release. Measured ~191K tokens/audit on v1.0.0; v1.1.0
@@ -117,6 +140,7 @@ for Claude Code, designed to coexist with [claude-seo](https://github.com/Agrici
 - API keys for direct LLM mention checks (`OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `PERPLEXITY_API_KEY`) are optional; the plugin falls back to WebSearch with explicit `INDIRECT` marking.
 - Scrapers (Reddit, YouTube, DuckDuckGo) surface `_error` / `_warning` markers when public HTML/JSON structures change, so callers can distinguish "scraper broken" from "genuine zero result".
 
-[Unreleased]: https://github.com/vladkomudrich/claude-geo/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/vladkomudrich/claude-geo/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/vladkomudrich/claude-geo/releases/tag/v1.2.0
 [1.1.0]: https://github.com/vladkomudrich/claude-geo/releases/tag/v1.1.0
 [1.0.0]: https://github.com/vladkomudrich/claude-geo/releases/tag/v1.0.0
